@@ -1,17 +1,18 @@
 //
-//  ViewController.swift
+//  NewViewController.swift
 //  Swift-UI
 //
 //  Created by Ivan Kosenkov on 10.07.2023.
 //
 
 import UIKit
-
-class ViewController: UIViewController {
+ 
+class ViewController2: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        view.backgroundColor = .green
+            title = "View Controller 2"
     }
 
 

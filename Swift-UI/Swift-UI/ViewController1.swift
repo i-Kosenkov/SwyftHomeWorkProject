@@ -6,13 +6,25 @@
 //
 
 import UIKit
+import WebKit
 
 class ViewController1: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        setupViews2()
+        view.addSubview(webView)
+        
+        let url = URL(string: "https://oauth.vk.com/authorize?client_id=" + AppCode.appCode + "&redirect_uri=http://oauth.vk.com/blank.html&scope=262150&display=mobile&response_type=token")
+        webView.load(URLRequest(url: url!))
+        
+//        setupViews2()
     }
+    
+    private lazy var webView: WKWebView = {
+        let webView = WKWebView(frame: view.frame)
+        webView.navigationDelegate = self
+        return webView
+    }()
     
     private func setupViews2(){
         view.addSubview(scrollView)
@@ -21,7 +33,7 @@ class ViewController1: UIViewController {
         contentView.addSubview(label)
         contentView.addSubview(loginField)
         contentView.addSubview(passwordField)
-        contentView.addSubview(button)
+//        contentView.addSubview(button)
         setupConstraints()
     }
     
@@ -30,7 +42,7 @@ class ViewController1: UIViewController {
         view.addSubview(label)
         view.addSubview(loginField)
         view.addSubview(passwordField)
-        view.addSubview(button)
+//        view.addSubview(button)
         setupConstraints()
     }
     
@@ -82,14 +94,14 @@ class ViewController1: UIViewController {
         return passwordField
     }()
     
-    private var button: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .black
-        button.setTitleColor(.white, for: .normal)
-        button.setTitle("Войти", for: .normal)
-        button.addTarget(nil, action: #selector(tap), for: .touchUpInside)
-        return button
-    }()
+//    private var button: UIButton = {
+//        let button = UIButton()
+//        button.backgroundColor = .black
+//        button.setTitleColor(.white, for: .normal)
+//        button.setTitle("Войти", for: .normal)
+//        button.addTarget(nil, action: #selector(tap), for: .touchUpInside)
+//        return button
+//    }()
     
     
     
@@ -98,7 +110,7 @@ class ViewController1: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         loginField.translatesAutoresizingMaskIntoConstraints = false
         passwordField.translatesAutoresizingMaskIntoConstraints = false
-        button.translatesAutoresizingMaskIntoConstraints = false
+//        button.translatesAutoresizingMaskIntoConstraints = false
         
         
         NSLayoutConstraint.activate([
@@ -122,16 +134,16 @@ class ViewController1: UIViewController {
             passwordField.widthAnchor.constraint(equalToConstant: 300),
             passwordField.heightAnchor.constraint(equalToConstant: 30),
             
-            button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            button.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 30),
+//            button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+//            button.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 30),
 //            button.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-            button.widthAnchor.constraint(equalToConstant: 150),
-            button.heightAnchor.constraint(equalToConstant: 50)
+//            button.widthAnchor.constraint(equalToConstant: 150),
+//            button.heightAnchor.constraint(equalToConstant: 50)
             
         ])
     }
     
-    @objc func tap() {
+    func tap() {
         navigationController?.pushViewController(ViewController2(), animated: true)
         
         let tabBarController = UITabBarController()
@@ -154,3 +166,26 @@ class ViewController1: UIViewController {
     }
 }
 
+extension ViewController1: WKNavigationDelegate{
+    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        guard let url = navigationResponse.response.url, url.path == "/blank.html", let fragment = url.fragment else {
+            decisionHandler(.allow)
+            return
+        }
+        let params = fragment
+            .components(separatedBy: "&")
+            .map { $0 .components(separatedBy: "=") }
+            .reduce([String: String]()) { result, param in
+                var dict = result
+                let key = param[0]
+                let value = param[1]
+                dict[key] = value
+                return dict
+            }
+        NetworkService.token = params["access_token"]!
+        NetworkService.userID = params["user_id"]!
+        decisionHandler(.cancel)
+        webView.removeFromSuperview()
+        tap()
+    }
+}

@@ -7,6 +7,32 @@
 
 import UIKit
 
+class ViewControllerPhotos: UIViewController {
+    
+    private let networkService = NetworkService()
+
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .white
+        title = "Photos"
+            
+        tableView.dataSource = self
+        tableView.register(PhotosTableViewCell.self, forCellReuseIdentifier: "cell")
+        view.addSubview(tableView)
+        networkService.getPhotos()
+        setupConstraints()
+    }
+
+    private var tableView = UITableView(frame: .zero, style: .grouped)
+
+    func setupConstraints(){
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor), tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)])
+    }
+}
+
+
 extension ViewControllerPhotos: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int{3}
 
@@ -16,25 +42,5 @@ extension ViewControllerPhotos: UITableViewDataSource {
             return UITableViewCell()
         }
         return cell
-    }
-}
-
-class ViewControllerPhotos: UIViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .white
-        title = "Photos"
-            
-        tableView.dataSource = self
-        tableView.register(PhotosTableViewCell.self, forCellReuseIdentifier: "cell")
-        view.addSubview(tableView)
-        setupConstraints()
-    }
-
-    private var tableView = UITableView(frame: .zero, style: .grouped)
-
-    func setupConstraints(){
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor), tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)])
     }
 }

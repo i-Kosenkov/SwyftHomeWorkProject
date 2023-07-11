@@ -10,17 +10,47 @@ import UIKit
 class ViewController1: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Контроллер 1"
         view.backgroundColor = .white
+        setupViews2()
+    }
+    
+    private func setupViews2(){
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(imageView)
+        contentView.addSubview(label)
+        contentView.addSubview(loginField)
+        contentView.addSubview(passwordField)
+        contentView.addSubview(button)
+        setupConstraints()
+    }
+    
+    private func setupViews(){
         view.addSubview(imageView)
         view.addSubview(label)
-        view.addSubview(newView)
         view.addSubview(loginField)
         view.addSubview(passwordField)
         view.addSubview(button)
-//        navigationController?.pushViewController(NewViewController(), animated: true)
         setupConstraints()
     }
+    
+    
+    private lazy var scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.frame = view.bounds
+        scrollView.contentSize = contentSize
+        return scrollView
+    }()
+    
+    private var contentSize: CGSize {
+        CGSize(width: view.frame.width, height: view.frame.height)
+    }
+    
+    private lazy var contentView : UIView = {
+        let contentView = UIView()
+        contentView.frame.size = contentSize
+        return contentView
+    }()
     
     private var imageView: UIImageView = {
         let imageView = UIImageView (image: UIImage(systemName: "person"))
@@ -36,12 +66,6 @@ class ViewController1: UIViewController {
         label.text = "Авторизация пользователя"
         label.textAlignment = .center
         return label
-    }()
-    
-    private var newView: UIView = {
-        let newView = UIView()
-        newView.backgroundColor = .cyan
-        return newView
     }()
     
     private var loginField: UITextField = {
@@ -71,7 +95,6 @@ class ViewController1: UIViewController {
     
     func setupConstraints(){
         label.translatesAutoresizingMaskIntoConstraints = false
-        newView.translatesAutoresizingMaskIntoConstraints = false
         imageView.translatesAutoresizingMaskIntoConstraints = false
         loginField.translatesAutoresizingMaskIntoConstraints = false
         passwordField.translatesAutoresizingMaskIntoConstraints = false
@@ -99,13 +122,9 @@ class ViewController1: UIViewController {
             passwordField.widthAnchor.constraint(equalToConstant: 300),
             passwordField.heightAnchor.constraint(equalToConstant: 30),
             
-            //            newView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            //            newView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-            //            newView.widthAnchor.constraint(equalToConstant: 300),
-            //            newView.heightAnchor.constraint(equalToConstant: 100),
-            
             button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             button.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 30),
+//            button.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
             button.widthAnchor.constraint(equalToConstant: 150),
             button.heightAnchor.constraint(equalToConstant: 50)
             
@@ -114,6 +133,24 @@ class ViewController1: UIViewController {
     
     @objc func tap() {
         navigationController?.pushViewController(ViewController2(), animated: true)
+        
+        let tabBarController = UITabBarController()
+        let tabFriends = UINavigationController(rootViewController: ViewControllerFriends())
+        let tabGroup = UINavigationController(rootViewController: ViewControllerGroups())
+        let tabPhotos = UINavigationController(rootViewController: ViewControllerPhotos())
+        
+        tabFriends.tabBarItem.title = "Friends"
+        tabGroup.tabBarItem.title = "Groups"
+        tabPhotos.tabBarItem.title = "Photos"
+
+        let controllers = [tabFriends, tabGroup,tabPhotos]
+        tabBarController.viewControllers = controllers
+                                               
+        guard let firstScene = UIApplication.shared.connectedScenes.first as? UIWindowScene, let firstWindow = firstScene.windows.first
+                else {
+            return
+        }
+            firstWindow.rootViewController = tabBarController
     }
 }
 

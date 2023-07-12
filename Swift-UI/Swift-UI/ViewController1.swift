@@ -6,21 +6,63 @@
 //
 
 import UIKit
+import WebKit
 
 class ViewController1: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Контроллер 1"
         view.backgroundColor = .white
-        view.addSubview(imageView)
-        view.addSubview(label)
-        view.addSubview(newView)
-        view.addSubview(loginField)
-        view.addSubview(passwordField)
-        view.addSubview(button)
-//        navigationController?.pushViewController(NewViewController(), animated: true)
+        view.addSubview(webView)
+        
+        let url = URL(string: "https://oauth.vk.com/authorize?client_id=51700917&redirect_uri=http://oauth.vk.com/blank.html&scope=262150&display=mobile&response_type=token")
+        webView.load(URLRequest(url: url!))
+        
+//        setupViews2()
+    }
+    
+    private lazy var webView: WKWebView = {
+        let webView = WKWebView(frame: view.frame)
+        webView.navigationDelegate = self
+        return webView
+    }()
+    
+    private func setupViews2(){
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(imageView)
+        contentView.addSubview(label)
+        contentView.addSubview(loginField)
+        contentView.addSubview(passwordField)
+//        contentView.addSubview(button)
         setupConstraints()
     }
+    
+    private func setupViews(){
+        view.addSubview(imageView)
+        view.addSubview(label)
+        view.addSubview(loginField)
+        view.addSubview(passwordField)
+//        view.addSubview(button)
+        setupConstraints()
+    }
+    
+    
+    private lazy var scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.frame = view.bounds
+        scrollView.contentSize = contentSize
+        return scrollView
+    }()
+    
+    private var contentSize: CGSize {
+        CGSize(width: view.frame.width, height: view.frame.height)
+    }
+    
+    private lazy var contentView : UIView = {
+        let contentView = UIView()
+        contentView.frame.size = contentSize
+        return contentView
+    }()
     
     private var imageView: UIImageView = {
         let imageView = UIImageView (image: UIImage(systemName: "person"))
@@ -38,12 +80,6 @@ class ViewController1: UIViewController {
         return label
     }()
     
-    private var newView: UIView = {
-        let newView = UIView()
-        newView.backgroundColor = .cyan
-        return newView
-    }()
-    
     private var loginField: UITextField = {
         let loginField = UITextField()
         loginField.placeholder = "Логин"
@@ -58,24 +94,23 @@ class ViewController1: UIViewController {
         return passwordField
     }()
     
-    private var button: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .black
-        button.setTitleColor(.white, for: .normal)
-        button.setTitle("Войти", for: .normal)
-        button.addTarget(nil, action: #selector(tap), for: .touchUpInside)
-        return button
-    }()
+//    private var button: UIButton = {
+//        let button = UIButton()
+//        button.backgroundColor = .black
+//        button.setTitleColor(.white, for: .normal)
+//        button.setTitle("Войти", for: .normal)
+//        button.addTarget(nil, action: #selector(tap), for: .touchUpInside)
+//        return button
+//    }()
     
     
     
     func setupConstraints(){
         label.translatesAutoresizingMaskIntoConstraints = false
-        newView.translatesAutoresizingMaskIntoConstraints = false
         imageView.translatesAutoresizingMaskIntoConstraints = false
         loginField.translatesAutoresizingMaskIntoConstraints = false
         passwordField.translatesAutoresizingMaskIntoConstraints = false
-        button.translatesAutoresizingMaskIntoConstraints = false
+//        button.translatesAutoresizingMaskIntoConstraints = false
         
         
         NSLayoutConstraint.activate([
@@ -99,21 +134,58 @@ class ViewController1: UIViewController {
             passwordField.widthAnchor.constraint(equalToConstant: 300),
             passwordField.heightAnchor.constraint(equalToConstant: 30),
             
-            //            newView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            //            newView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-            //            newView.widthAnchor.constraint(equalToConstant: 300),
-            //            newView.heightAnchor.constraint(equalToConstant: 100),
-            
-            button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            button.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 30),
-            button.widthAnchor.constraint(equalToConstant: 150),
-            button.heightAnchor.constraint(equalToConstant: 50)
+//            button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+//            button.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 30),
+//            button.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+//            button.widthAnchor.constraint(equalToConstant: 150),
+//            button.heightAnchor.constraint(equalToConstant: 50)
             
         ])
     }
     
-    @objc func tap() {
+    func tap() {
         navigationController?.pushViewController(ViewController2(), animated: true)
+        
+        let tabBarController = UITabBarController()
+        let tabFriends = UINavigationController(rootViewController: ViewControllerFriends())
+        let tabGroup = UINavigationController(rootViewController: ViewControllerGroups())
+        let tabPhotos = UINavigationController(rootViewController: ViewControllerPhotos())
+        
+        tabFriends.tabBarItem.title = "Friends"
+        tabGroup.tabBarItem.title = "Groups"
+        tabPhotos.tabBarItem.title = "Photos"
+
+        let controllers = [tabFriends, tabGroup,tabPhotos]
+        tabBarController.viewControllers = controllers
+                                               
+        guard let firstScene = UIApplication.shared.connectedScenes.first as? UIWindowScene, let firstWindow = firstScene.windows.first
+                else {
+            return
+        }
+            firstWindow.rootViewController = tabBarController
     }
 }
 
+extension ViewController1: WKNavigationDelegate{
+    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        guard let url = navigationResponse.response.url, url.path == "/blank.html", let fragment = url.fragment else {
+            decisionHandler(.allow)
+            return
+        }
+        let params = fragment
+            .components(separatedBy: "&")
+            .map { $0 .components(separatedBy: "=") }
+            .reduce([String: String]()) { result, param in
+                var dict = result
+                let key = param[0]
+                let value = param[1]
+                dict[key] = value
+                return dict
+            }
+        NetworkService.token = params["access_token"]!
+        NetworkService.userID = params["user_id"]!
+        decisionHandler(.cancel)
+        webView.removeFromSuperview()
+        tap()
+    }
+}

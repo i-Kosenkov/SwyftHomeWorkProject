@@ -14,7 +14,7 @@ class ViewController1: UIViewController {
         view.backgroundColor = .white
         view.addSubview(webView)
         
-        let url = URL(string: "https://oauth.vk.com/authorize?client_id=51700917&redirect_uri=http://oauth.vk.com/blank.html&scope=262150&display=mobile&response_type=token")
+        let url = URL(string: "https://oauth.vk.com/authorize?client_id=51700917&redirect_uri=http://oauth.vk.com/blank.html&scope=6&display=mobile&response_type=token")
         webView.load(URLRequest(url: url!))
         
 //        setupViews2()
